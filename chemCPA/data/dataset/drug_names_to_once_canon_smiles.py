@@ -15,6 +15,11 @@ def drug_names_to_once_canon_smiles(
     That way, if drug_names includes both single and sub-drug names,
     we have an entry for each sub-drug.
     """
+    # Handle case where SMILES data is not available
+    if smiles_key is None:
+        # Return None for all drug names when SMILES data is not available
+        return [None] * len(drug_names)
+    
     drug_names_array = obs[perturbation_key]
     smiles_array = obs[smiles_key]
 
@@ -61,5 +66,3 @@ def drug_names_to_once_canon_smiles(
             result.append(None)
 
     return result
-
-
