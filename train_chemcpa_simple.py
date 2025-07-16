@@ -72,7 +72,7 @@ class SimplifiedChemCPATrainer:
                 'perturbation_key': 'condition',  # LINCS uses 'condition' not 'cov_drug_dose_name'
                 'pert_category': 'cov_drug_dose_name',
                 'dose_key': 'dose_val',
-                'smiles_key': 'canonical_smiles',  # LINCS has canonical_smiles
+                'smiles_key': None,  # LINCS doesn't have canonical_smiles in obs
                 'covariate_keys': ['cell_type'],
                 'degs_key': 'rank_genes_groups_cov',  # LINCS uses this key instead of all_DEGs
                 'description': 'LINCS L1000 dataset - large drug screening'
