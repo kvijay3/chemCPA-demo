@@ -41,7 +41,7 @@ volume = modal.Volume.from_name("chemcpa-data", create_if_missing=True)
 
 @app.function(
     image=image,
-    gpu=modal.gpu.A100(count=1),
+    gpu="A100-40GB",
     volumes={"/data": volume},
     timeout=3600 * 4,  # 4 hours timeout
     memory=32768,  # 32GB RAM
