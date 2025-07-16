@@ -104,6 +104,13 @@ def train_chemcpa(
     if (data_dir / "config").exists():
         shutil.copytree(data_dir / "config", work_dir / "config")
     
+    # Copy embeddings directory to project_folder
+    if (data_dir / "embeddings").exists():
+        shutil.copytree(data_dir / "embeddings", project_folder / "embeddings")
+        print("✅ Copied embeddings directory")
+    else:
+        print("⚠️  Embeddings directory not found in volume")
+    
     # Run training
     print("🏋️ Starting training...")
     cmd = [
