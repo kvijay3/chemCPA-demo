@@ -63,6 +63,7 @@ class SimplifiedChemCPATrainer:
                 'dose_key': 'dose',
                 'smiles_key': 'SMILES',  # Broad has SMILES
                 'covariate_keys': 'cell_type',
+                'degs_key': 'rank_genes_groups_cov_all',  # Broad uses same as biolord
                 'description': 'Broad dataset - larger scale training'
             },
             'lincs': {
@@ -73,6 +74,7 @@ class SimplifiedChemCPATrainer:
                 'dose_key': 'dose_val',
                 'smiles_key': None,  # LINCS doesn't have SMILES in obs
                 'covariate_keys': ['cell_type'],
+                'degs_key': 'rank_genes_groups_cov',  # LINCS uses this key instead of all_DEGs
                 'description': 'LINCS L1000 dataset - large drug screening'
             },
             'biolord': {
@@ -83,6 +85,7 @@ class SimplifiedChemCPATrainer:
                 'dose_key': 'dose',
                 'smiles_key': 'SMILES',  # Biolord has SMILES
                 'covariate_keys': 'cell_type',
+                'degs_key': 'rank_genes_groups_cov_all',  # Biolord uses this key
                 'description': 'Biolord dataset - high-quality biological data for stem cells'
             }
         }
