@@ -9,8 +9,8 @@ def custom_collate(batch):
         if samples[0] is None:
             concat_batch.append(None)
         else:
-            # Move to CUDA here so that prefetching in the DataLoader yields ready-to-process CUDA tensors
-            concat_batch.append(torch.stack(samples, 0).to("cuda"))
+            # Stack tensors without moving to specific device - Lightning will handle device placement
+            concat_batch.append(torch.stack(samples, 0))
     return concat_batch
 
 class PerturbationDataModule(L.LightningDataModule):
