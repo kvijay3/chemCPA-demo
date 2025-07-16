@@ -67,15 +67,15 @@ class SimplifiedChemCPATrainer:
                 'description': 'Broad dataset - larger scale training'
             },
             'lincs': {
-                'dataset_path': 'project_folder/datasets/lincs.h5ad',
+                'dataset_path': 'project_folder/datasets/lincs_full_smiles.h5ad',  # Use SMILES version
                 'split_key': 'split',
                 'perturbation_key': 'condition',  # LINCS uses 'condition' not 'cov_drug_dose_name'
                 'pert_category': 'cov_drug_dose_name',
                 'dose_key': 'dose_val',
-                'smiles_key': None,  # LINCS doesn't have canonical_smiles in obs
+                'smiles_key': 'canonical_smiles',  # LINCS full_smiles version has canonical_smiles
                 'covariate_keys': ['cell_type'],
                 'degs_key': 'rank_genes_groups_cov',  # LINCS uses this key instead of all_DEGs
-                'description': 'LINCS L1000 dataset - large drug screening'
+                'description': 'LINCS L1000 dataset - large drug screening with SMILES'
             },
             'biolord': {
                 'dataset_path': 'project_folder/datasets/adata_biolord_split_30.h5ad',
