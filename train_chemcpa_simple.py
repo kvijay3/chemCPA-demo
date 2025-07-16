@@ -122,10 +122,7 @@ class SimplifiedChemCPATrainer:
                     'dosers_wd': 1e-7,
                     'step_size_lr': 45,
                 },
-                'embedding': {
-                    'model': 'zeros',  # Use zero embeddings as fallback (will be learned during training)
-                    'datapath': None,
-                },
+                'embedding': 'zeros',  # Use zero embeddings as fallback (will be learned during training)
                 'additional_params': {
                     'seed': 42,
                     'loss_ae': 'nb',  # negative binomial loss for count data
