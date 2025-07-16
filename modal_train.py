@@ -81,7 +81,10 @@ def train_chemcpa(
     
     # Copy datasets from volume to working directory
     print("📂 Copying datasets from volume...")
-    shutil.copytree(data_dir / "datasets", work_dir / "datasets")
+    # Create project_folder structure to match expected paths
+    project_folder = work_dir / "project_folder"
+    project_folder.mkdir(exist_ok=True)
+    shutil.copytree(data_dir / "datasets", project_folder / "datasets")
     
     # Copy source code from volume
     if (data_dir / "chemCPA").exists():
