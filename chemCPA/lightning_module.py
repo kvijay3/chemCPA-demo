@@ -42,12 +42,20 @@ class ChemCPA(L.LightningModule):
 
         append_ae_layer = self.config["model"]["append_ae_layer"]
         append_layer_width = dataset_config["num_genes"] if append_ae_layer else None
+        # Determine the appropriate device
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif torch.backends.mps.is_available():
+            device = "mps"  # Apple Silicon GPU
+        else:
+            device = "cpu"
+            
         # Create the ComPert model
         self.model = ComPert(
             num_genes=dataset_config["num_genes"],
             num_drugs=dataset_config["num_drugs"],
             num_covariates=dataset_config["num_covariates"],
-            device="cuda",
+            device=device,
             hparams=hparams,
             drug_embeddings=self.drug_embeddings,
             use_drugs_idx=dataset_config["use_drugs_idx"],

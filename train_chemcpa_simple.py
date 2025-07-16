@@ -277,9 +277,17 @@ class SimplifiedChemCPATrainer:
         callbacks = self.setup_callbacks()
         logger = self.setup_logger()
         
+        # Determine the appropriate accelerator
+        if torch.cuda.is_available():
+            accelerator = 'cuda'
+        elif torch.backends.mps.is_available():
+            accelerator = 'mps'  # Apple Silicon GPU
+        else:
+            accelerator = 'cpu'
+            
         # Create trainer
         trainer = L.Trainer(
-            accelerator='cuda' if torch.cuda.is_available() else 'cpu',
+            accelerator=accelerator,
             devices=1,
             max_epochs=self.args.epochs,
             callbacks=callbacks,
