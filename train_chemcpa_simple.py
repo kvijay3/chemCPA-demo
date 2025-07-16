@@ -67,15 +67,15 @@ class SimplifiedChemCPATrainer:
                 'description': 'Broad dataset - larger scale training'
             },
             'lincs': {
-                'dataset_path': 'project_folder/datasets/lincs_full_pp.h5ad',  # Use preprocessed file
+                'dataset_path': 'project_folder/datasets/lincs_full_smiles.h5ad',  # Use SMILES-enabled dataset
                 'split_key': 'split',
                 'perturbation_key': 'condition',  # Preprocessed file uses 'condition'
                 'pert_category': 'cov_drug_dose_name',  # Standard ChemCPA format
                 'dose_key': 'dose_val',  # Standard ChemCPA format
-                'smiles_key': None,  # SMILES data not available in basic preprocessing
+                'smiles_key': 'canonical_smiles',  # SMILES data now available!
                 'covariate_keys': ['cell_type'],  # Standard ChemCPA format
                 'degs_key': 'rank_genes_groups_cov',  # LINCS uses this key instead of all_DEGs
-                'description': 'LINCS L1000 dataset - large drug screening (preprocessed)'
+                'description': 'LINCS L1000 dataset - large drug screening (with SMILES)'
             },
             'biolord': {
                 'dataset_path': 'project_folder/datasets/adata_biolord_split_30.h5ad',
