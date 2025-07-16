@@ -24,10 +24,20 @@ class ChemCPA(L.LightningModule):
         hparams = self.config["model"]["hparams"]
 
         # Build / load any required embeddings
+        embedding_config = self.config["model"]["embedding"]
+        if isinstance(embedding_config, str):
+            # Simple string format
+            embedding_model = embedding_config
+            data_path = self.config["model"].get("embedding_datapath", None)
+        else:
+            # Dictionary format
+            embedding_model = embedding_config["model"]
+            data_path = embedding_config.get("datapath", None)
+            
         self.drug_embeddings = get_chemical_representation(
             smiles=dataset_config["canon_smiles_unique_sorted"],
-            embedding_model=self.config["model"]["embedding"],
-            data_path=self.config["model"]["embedding"]["datapath"],
+            embedding_model=embedding_model,
+            data_path=data_path,
         )
 
         append_ae_layer = self.config["model"]["append_ae_layer"]
@@ -391,5 +401,3 @@ class ChemCPA(L.LightningModule):
             {"optimizer": optimizer_adversaries, "lr_scheduler": scheduler_adversaries},
             {"optimizer": optimizer_dosers, "lr_scheduler": scheduler_dosers},
         )
-
-
