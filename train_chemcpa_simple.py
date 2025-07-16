@@ -285,7 +285,7 @@ class SimplifiedChemCPATrainer:
             callbacks=callbacks,
             logger=logger,
             check_val_every_n_epoch=self.config['training']['checkpoint_freq'],
-            gradient_clip_val=1.0,  # Prevent gradient explosion
+            # Note: gradient_clip_val removed because ChemCPA uses manual optimization
             deterministic=True,  # For reproducibility
         )
         
