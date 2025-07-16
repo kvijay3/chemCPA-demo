@@ -88,11 +88,11 @@ full = True
 load_adata = True 
 
 if full:
-    adata_in = DATA_DIR / 'lincs_full_pp.h5ad'
-    adata_out =  PROJECT_DIR / 'datasets' / 'lincs_full_smiles.h5ad' 
+    adata_in = Path('project_folder/datasets/lincs_full_pp.h5ad')
+    adata_out = Path('project_folder/datasets/lincs_full_smiles.h5ad')
 else: 
-    adata_in = DATA_DIR / 'lincs_pp.h5ad'
-    adata_out = PROJECT_DIR / 'datasets' / 'lincs_smiles.h5ad'  
+    adata_in = Path('project_folder/datasets/lincs_pp.h5ad')
+    adata_out = Path('project_folder/datasets/lincs_smiles.h5ad')  
 
     
 logging.info(f"Starting to load in data from {adata_in}")
@@ -285,5 +285,3 @@ for i, k in enumerate(adata.obs.cov_drug_name.unique()):
         adata.uns['rank_genes_groups_cov'][k]
     except: 
         print(f"{i}: {k}") if 'DMSO' not in k else None
-
-
