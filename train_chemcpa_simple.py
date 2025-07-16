@@ -72,7 +72,7 @@ class SimplifiedChemCPATrainer:
                 'perturbation_key': 'condition',  # Preprocessed file uses 'condition'
                 'pert_category': 'cov_drug_dose_name',  # Standard ChemCPA format
                 'dose_key': 'dose_val',  # Standard ChemCPA format
-                'smiles_key': 'canonical_smiles',  # Should be available after preprocessing
+                'smiles_key': None,  # SMILES data not available in basic preprocessing
                 'covariate_keys': ['cell_type'],  # Standard ChemCPA format
                 'degs_key': 'rank_genes_groups_cov',  # LINCS uses this key instead of all_DEGs
                 'description': 'LINCS L1000 dataset - large drug screening (preprocessed)'
