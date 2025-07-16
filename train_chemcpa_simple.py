@@ -295,6 +295,8 @@ class SimplifiedChemCPATrainer:
             check_val_every_n_epoch=self.config['training']['checkpoint_freq'],
             # Note: gradient_clip_val removed because ChemCPA uses manual optimization
             deterministic=True,  # For reproducibility
+            enable_progress_bar=True,  # Show training progress
+            log_every_n_steps=50,      # Log metrics every 50 steps
         )
         
         print(f"Starting training for {self.args.epochs} epochs...")

@@ -270,9 +270,19 @@ class ChemCPA(L.LightningModule):
             for lr_s in self.lr_schedulers():
                 lr_s.step()
         # Logging
-        self.log("reconstruction_loss", reconstruction_loss)
-        self.log("adversary_drugs_loss", adversary_drugs_loss)
-        self.log("adversary_covariates_loss", adversary_covariates_loss)
+        self.log("reconstruction_loss", reconstruction_loss, prog_bar=True)
+        self.log("adversary_drugs_loss", adversary_drugs_loss, prog_bar=True)
+        self.log("adversary_covariates_loss", adversary_covariates_loss, prog_bar=True)
+        
+        # Log total loss for monitoring
+        if (self.global_step % self.model.hparams["adversary_steps"]) == 0:
+            # Adversary step
+            total_loss = adversary_drugs_loss + adversary_covariates_loss
+            self.log("adversary_total_loss", total_loss, prog_bar=True)
+        else:
+            # Autoencoder step
+            total_loss = reconstruction_loss
+            self.log("autoencoder_loss", total_loss, prog_bar=True)
 
         return None
 
@@ -282,6 +292,11 @@ class ChemCPA(L.LightningModule):
         """Minimal placeholder, you can fill in with your validation logic."""
         pass
 
+    def on_train_epoch_end(self):
+        """Log epoch-level information"""
+        current_epoch = self.current_epoch
+        print(f"Epoch {current_epoch + 1}/{self.trainer.max_epochs} completed")
+        
     def on_validation_epoch_end(self):
         """Example R2 evaluation after each validation epoch."""
         # Make sure we don't accidentally train in these evaluations
@@ -293,7 +308,10 @@ class ChemCPA(L.LightningModule):
         )
         # E.g. result = [R2_mean, R2_mean_de, R2_var, R2_var_de]
         metric_names = ["R2_mean", "R2_mean_de", "R2_var", "R2_var_de"]
-        self.log_dict(dict(zip(metric_names, result)), on_step=False, on_epoch=True)
+        self.log_dict(dict(zip(metric_names, result)), on_step=False, on_epoch=True, prog_bar=True)
+        
+        # Print validation results
+        print(f"Validation R² scores: Mean={result[0]:.4f}, Mean_DE={result[1]:.4f}, Var={result[2]:.4f}, Var_DE={result[3]:.4f}")
         self.train()
 
     def on_train_end(self):

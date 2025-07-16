@@ -113,6 +113,13 @@ def train_chemcpa(
     
     # Run training
     print("🏋️ Starting training...")
+    print(f"📊 Training configuration:")
+    print(f"   Dataset: {dataset}")
+    print(f"   Epochs: {epochs}")
+    print(f"   Batch size: {batch_size}")
+    print(f"   Learning rate: {learning_rate}")
+    print("="*60)
+    
     cmd = [
         sys.executable, "train_chemcpa_simple.py",
         "--dataset", dataset,
