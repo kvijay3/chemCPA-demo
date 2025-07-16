@@ -105,7 +105,7 @@ class Dataset:
                 de_genes_decoded[key] = genes_
             self.de_genes = de_genes_decoded
 
-            self.drugs_names = np.array(obs[perturbation_key])  # e.g. "DrugA+DrugB"
+            self.drugs_names = np.array([str(x) for x in obs[perturbation_key]])  # e.g. "DrugA+DrugB", convert to strings
             self.dose_names = np.array(obs[dose_key])           # e.g. "0.1+0.5"
 
             # Convert each dose string into a list of floats
@@ -120,7 +120,12 @@ class Dataset:
             drugs_names_unique = set()
             print(self.drugs_names)
             for d in self.drugs_names:
-                [drugs_names_unique.add(x) for x in d.split("+")]
+                # Convert to string and handle both string and numeric drug names
+                d_str = str(d)
+                if "+" in d_str:
+                    [drugs_names_unique.add(x) for x in d_str.split("+")]
+                else:
+                    drugs_names_unique.add(d_str)
 
             self.drugs_names_unique_sorted = np.array(sorted(drugs_names_unique))
             self._drugs_name_to_idx = {
@@ -391,5 +396,3 @@ class Dataset:
 
     def __len__(self):
         return len(self.genes)
-
-
