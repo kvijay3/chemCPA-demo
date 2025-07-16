@@ -67,15 +67,15 @@ class SimplifiedChemCPATrainer:
                 'description': 'Broad dataset - larger scale training'
             },
             'lincs': {
-                'dataset_path': 'project_folder/datasets/lincs_full_smiles.h5ad',  # Use SMILES version
+                'dataset_path': 'project_folder/datasets/lincs_full.h5ad',  # Use the actual file you have
                 'split_key': 'split',
                 'perturbation_key': 'condition',  # LINCS uses 'condition' not 'cov_drug_dose_name'
                 'pert_category': 'cov_drug_dose_name',
                 'dose_key': 'dose_val',
-                'smiles_key': 'canonical_smiles',  # LINCS full_smiles version has canonical_smiles
+                'smiles_key': 'canonical_smiles',  # Try canonical_smiles first, fallback if not found
                 'covariate_keys': ['cell_type'],
                 'degs_key': 'rank_genes_groups_cov',  # LINCS uses this key instead of all_DEGs
-                'description': 'LINCS L1000 dataset - large drug screening with SMILES'
+                'description': 'LINCS L1000 dataset - large drug screening'
             },
             'biolord': {
                 'dataset_path': 'project_folder/datasets/adata_biolord_split_30.h5ad',
@@ -180,9 +180,16 @@ class SimplifiedChemCPATrainer:
             print(f"- Number of genes: {dataset_config['num_genes']}")
             print(f"- Number of drugs: {dataset_config['num_drugs']}")
             print(f"- Number of covariates: {dataset_config['num_covariates']}")
+            print(f"- Available splits: {list(datasets.keys())}")
             print(f"- Training samples: {len(datasets['training'])}")
-            print(f"- Validation samples: {len(datasets['validation'])}")
-            print(f"- Test samples: {len(datasets['test'])}")
+            if 'validation' in datasets:
+                print(f"- Validation samples: {len(datasets['validation'])}")
+            else:
+                print("- Validation samples: Not available")
+            if 'test' in datasets:
+                print(f"- Test samples: {len(datasets['test'])}")
+            else:
+                print("- Test samples: Not available")
             
             return dm, dataset_config, dataset
             
