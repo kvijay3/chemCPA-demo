@@ -120,12 +120,17 @@ def train_chemcpa(
     print(f"   Learning rate: {learning_rate}")
     print("="*60)
     
+    # Set output directory to save models in working directory
+    output_dir = work_dir / "outputs"
+    output_dir.mkdir(exist_ok=True)
+    
     cmd = [
         sys.executable, "train_chemcpa_simple.py",
         "--dataset", dataset,
         "--epochs", str(epochs),
         "--batch_size", str(batch_size),
-        "--learning_rate", str(learning_rate)
+        "--learning_rate", str(learning_rate),
+        "--output_dir", str(output_dir)
     ]
     
     try:
@@ -138,12 +143,32 @@ def train_chemcpa(
         results_dir.mkdir(exist_ok=True)
         
         # Copy any generated files back to volume
-        for pattern in ["*.ckpt", "*.log", "lightning_logs/", "checkpoints/"]:
+        print("📁 Copying training outputs to volume...")
+        
+        # Copy the entire outputs directory
+        if output_dir.exists():
+            shutil.copytree(output_dir, results_dir / "outputs", dirs_exist_ok=True)
+            print(f"✅ Copied outputs directory to volume: {results_dir / 'outputs'}")
+        
+        # Also copy any other generated files
+        for pattern in ["*.ckpt", "*.log", "lightning_logs/"]:
             for file_path in work_dir.glob(pattern):
                 if file_path.is_file():
                     shutil.copy2(file_path, results_dir)
                 elif file_path.is_dir():
                     shutil.copytree(file_path, results_dir / file_path.name, dirs_exist_ok=True)
+        
+        # Print model locations
+        checkpoints_dir = results_dir / "outputs" / "checkpoints"
+        if checkpoints_dir.exists():
+            print(f"🎯 Model checkpoints saved to volume at: {checkpoints_dir}")
+            ckpt_files = list(checkpoints_dir.glob("*.ckpt"))
+            if ckpt_files:
+                print(f"📦 Found {len(ckpt_files)} checkpoint files:")
+                for ckpt in ckpt_files:
+                    print(f"   - {ckpt.name}")
+        else:
+            print("⚠️  No checkpoints directory found")
         
         return {
             "status": "success",
@@ -188,6 +213,60 @@ def upload_files():
     print("✅ Volume directories created")
     return {"status": "ready"}
 
+@app.function(
+    image=image,
+    volumes={"/data": volume},
+    timeout=60,  # 1 minute timeout
+)
+def list_saved_models():
+    """List all saved model checkpoints in the volume"""
+    from pathlib import Path
+    
+    data_dir = Path("/data")
+    results_dir = data_dir / "results"
+    
+    if not results_dir.exists():
+        return {"error": "No training results found"}
+    
+    models = []
+    
+    # Check for models in outputs/checkpoints
+    checkpoints_dir = results_dir / "outputs" / "checkpoints"
+    if checkpoints_dir.exists():
+        for ckpt_file in checkpoints_dir.glob("*.ckpt"):
+            models.append({
+                "path": str(ckpt_file),
+                "name": ckpt_file.name,
+                "size_mb": round(ckpt_file.stat().st_size / (1024 * 1024), 2)
+            })
+    
+    # Check for any other checkpoint files
+    for ckpt_file in results_dir.rglob("*.ckpt"):
+        if ckpt_file not in [Path(m["path"]) for m in models]:
+            models.append({
+                "path": str(ckpt_file),
+                "name": ckpt_file.name,
+                "size_mb": round(ckpt_file.stat().st_size / (1024 * 1024), 2)
+            })
+    
+    return {
+        "models": models,
+        "total_models": len(models),
+        "results_dir": str(results_dir)
+    }
+
 if __name__ == "__main__":
-    # This allows running the script locally
-    pass
+    # Example usage
+    with app.run():
+        # Train model
+        result = train_chemcpa.remote(
+            dataset="lincs",
+            epochs=50,
+            batch_size=128,
+            learning_rate=1e-3
+        )
+        print("Training result:", result)
+        
+        # List saved models
+        models = list_saved_models.remote()
+        print("Saved models:", models)
