@@ -126,9 +126,7 @@ class SimplifiedChemCPATrainer:
                 'embedding_datapath': None,  # No pre-computed embeddings
                 'additional_params': {
                     'seed': 42,
-                    'loss_ae': 'nb',  # negative binomial loss for count data
                     'doser_type': 'mlp',
-                    'n_latent': 128,
                 },
                 'append_ae_layer': False,
                 'load_pretrained': self.args.pretrained_path is not None,
