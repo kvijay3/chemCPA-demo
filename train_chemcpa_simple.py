@@ -69,11 +69,11 @@ class SimplifiedChemCPATrainer:
             'lincs': {
                 'dataset_path': 'project_folder/datasets/lincs_full.h5ad',  # Use the actual file you have
                 'split_key': 'split',
-                'perturbation_key': 'condition',  # LINCS uses 'condition' not 'cov_drug_dose_name'
-                'pert_category': 'cov_drug_dose_name',
-                'dose_key': 'dose_val',
-                'smiles_key': 'canonical_smiles',  # Try canonical_smiles first, fallback if not found
-                'covariate_keys': ['cell_type'],
+                'perturbation_key': 'pert_iname',  # Use pert_iname (drug name) from actual keys
+                'pert_category': 'pert_type',  # Use pert_type from actual keys
+                'dose_key': 'pert_dose',  # Use pert_dose from actual keys
+                'smiles_key': None,  # No SMILES data in this file structure
+                'covariate_keys': ['lincs_phase'],  # Use lincs_phase as covariate
                 'degs_key': 'rank_genes_groups_cov',  # LINCS uses this key instead of all_DEGs
                 'description': 'LINCS L1000 dataset - large drug screening'
             },
