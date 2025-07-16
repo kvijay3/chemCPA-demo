@@ -67,16 +67,15 @@ class SimplifiedChemCPATrainer:
                 'description': 'Broad dataset - larger scale training'
             },
             'lincs': {
-                'dataset_path': 'project_folder/datasets/lincs_full.h5ad',  # Use the actual file you have
+                'dataset_path': 'project_folder/datasets/lincs_full_pp.h5ad',  # Use preprocessed file
                 'split_key': 'split',
-                'perturbation_key': 'pert_iname',  # Use pert_iname (drug name) from actual keys
-                'pert_category': 'pert_type',  # Use pert_type from actual keys
-                'dose_key': 'pert_dose',  # Use pert_dose from actual keys
-                'smiles_key': None,  # No SMILES data in this file structure
-                'covariate_keys': ['lincs_phase'],  # Use lincs_phase as covariate
-                'control_key': None,  # No control column in LINCS dataset
+                'perturbation_key': 'condition',  # Preprocessed file uses 'condition'
+                'pert_category': 'cov_drug_dose_name',  # Standard ChemCPA format
+                'dose_key': 'dose_val',  # Standard ChemCPA format
+                'smiles_key': 'canonical_smiles',  # Should be available after preprocessing
+                'covariate_keys': ['cell_type'],  # Standard ChemCPA format
                 'degs_key': 'rank_genes_groups_cov',  # LINCS uses this key instead of all_DEGs
-                'description': 'LINCS L1000 dataset - large drug screening'
+                'description': 'LINCS L1000 dataset - large drug screening (preprocessed)'
             },
             'biolord': {
                 'dataset_path': 'project_folder/datasets/adata_biolord_split_30.h5ad',
