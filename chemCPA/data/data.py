@@ -207,6 +207,7 @@ def load_data(
     degs_key: str = "rank_genes_groups_cov",
     pert_category: str = "cov_drug_dose_name",
     split_key: str = "split",
+    control_key: Optional[str] = "control",
     verbose: bool = True,
 ): 
     if verbose:
@@ -219,7 +220,7 @@ def load_data(
                 print(f"File structure: {list(file.keys())}")
 
             # Prepare obs_keys for obs loader - filter out None values
-            base_keys = [perturbation_key, dose_key, pert_category, 'control', split_key]
+            base_keys = [perturbation_key, dose_key, pert_category, control_key, split_key]
             if smiles_key is not None:
                 base_keys.append(smiles_key)
             
@@ -292,6 +293,7 @@ def load_dataset_splits(
     degs_key: str = "rank_genes_groups_cov",
     pert_category: str = "cov_drug_dose_name",
     split_key: str = "split",
+    control_key: Union[str, None] = "control",
     return_dataset: bool = False,
     use_drugs_idx=False,
     verbose: bool = False,
@@ -305,6 +307,7 @@ def load_dataset_splits(
         degs_key=degs_key,
         pert_category=pert_category,
         split_key=split_key,
+        control_key=control_key,
         verbose=verbose,
     )
     dataset = Dataset(

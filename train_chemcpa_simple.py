@@ -74,6 +74,7 @@ class SimplifiedChemCPATrainer:
                 'dose_key': 'pert_dose',  # Use pert_dose from actual keys
                 'smiles_key': None,  # No SMILES data in this file structure
                 'covariate_keys': ['lincs_phase'],  # Use lincs_phase as covariate
+                'control_key': None,  # No control column in LINCS dataset
                 'degs_key': 'rank_genes_groups_cov',  # LINCS uses this key instead of all_DEGs
                 'description': 'LINCS L1000 dataset - large drug screening'
             },
