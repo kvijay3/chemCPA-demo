@@ -1,0 +1,161 @@
+# Configuration for ChemCPA training on stem cell data
+# This config is optimized for stem cell drug perturbation prediction
+
+# Dataset configuration
+dataset:
+  perturbation_key: condition  # Column name for drug/perturbation identifier
+  pert_category: cov_drug_dose_name  # Combined cell_type + drug + dose identifier
+  dose_key: dose  # Column name for drug dosage
+  covariate_keys: cell_type  # Cell type information
+  smiles_key: SMILES  # SMILES representation of drugs
+  use_drugs_idx: true  # Use drug indices instead of one-hot encoding
+  split_key: split_cellcycle_ood  # How data is split (out-of-distribution)
+  degs_key: all_DEGs  # Differentially expressed genes key
+  
+  # Dataset paths - choose one based on your needs
+  sciplex_path: project_folder/datasets/sciplex_complete_v2.h5ad
+  broad_path: project_folder/datasets/adata_biolord_split_30_subset.h5ad
+  lincs_path: project_folder/datasets/lincs_full.h5ad
+
+# Model architecture
+model:
+  # Core hyperparameters
+  hparams:
+    batch_size: 64  # Increased for better gradient estimates
+    lr: 1e-3  # Base learning rate
+    wd: 1e-7  # Weight decay for regularization
+    
+    # Autoencoder (main model) parameters
+    autoencoder_width: 512  # Hidden layer width
+    autoencoder_depth: 4  # Number of hidden layers
+    autoencoder_lr: 1e-3  # Autoencoder learning rate
+    
+    # Adversarial training parameters (for domain adaptation)
+    adversary_width: 128  # Adversary network width
+    adversary_depth: 3  # Adversary network depth
+    adversary_lr: 3e-4  # Adversary learning rate
+    adversary_steps: 3  # Steps per adversary update
+    reg_adversary: 5.0  # Adversary regularization strength
+    penalty_adversary: 3.0  # Adversary penalty weight
+    reg_adversary_cov: 15.0  # Covariate adversary regularization
+    reg_adversary_drugs: 5.0  # Drug adversary regularization
+    
+    # Dosage response parameters
+    dosers_width: 64  # Doser network width
+    dosers_depth: 2  # Doser network depth
+    dosers_lr: 1e-3  # Doser learning rate
+    dosers_wd: 1e-7  # Doser weight decay
+    
+    # Learning rate scheduling
+    step_size_lr: 45  # LR scheduler step size
+    
+  # Drug embedding configuration
+  embedding:
+    model: chemCPA  # Use chemCPA embeddings
+    datapath: embeddings/chemCPA/  # Path to precomputed embeddings
+    
+  # Additional model parameters
+  additional_params:
+    seed: 42  # Random seed for reproducibility
+    loss_ae: nb  # Negative binomial loss (good for count data)
+    doser_type: mlp  # MLP-based dosage response
+    n_latent: 128  # Latent space dimensionality
+    
+  # Model architecture options
+  append_ae_layer: false  # Whether to append autoencoder layer
+  
+  # Pretrained model loading
+  load_pretrained: false  # Set to true if using pretrained weights
+  pretrained_model_path: ""  # Path to pretrained model
+  pretrained_model_hashes:
+    model: ""  # Model hash for loading specific checkpoint
+
+# Training configuration
+training:
+  num_epochs: 150  # Number of training epochs
+  max_minutes: "24:00:00"  # Maximum training time
+  save_dir: ./outputs/stem_cell_training  # Output directory
+  checkpoint_freq: 5  # Save checkpoint every N epochs
+  
+  # Early stopping
+  early_stopping:
+    enabled: true
+    patience: 15  # Stop if no improvement for N epochs
+    min_delta: 0.001  # Minimum change to qualify as improvement
+    
+  # Gradient clipping
+  gradient_clip_val: 1.0  # Prevent gradient explosion
+
+# Logging configuration
+logging:
+  # Weights & Biases
+  wandb:
+    enabled: true  # Set to false to disable wandb
+    project: chemcpa-stem-cells
+    entity: your_wandb_username  # Replace with your wandb username
+    tags: [stem-cells, drug-perturbation, chemcpa]
+    
+  # TensorBoard (alternative to wandb)
+  tensorboard:
+    enabled: false  # Set to true if not using wandb
+    log_dir: ./logs/tensorboard
+
+# Stem cell specific settings
+stem_cell_config:
+  # Cell types commonly found in stem cell datasets
+  expected_cell_types:
+    - "embryonic_stem_cell"
+    - "induced_pluripotent_stem_cell"
+    - "neural_stem_cell"
+    - "mesenchymal_stem_cell"
+    - "hematopoietic_stem_cell"
+    - "differentiated_cell"
+    
+  # Genes of interest for stem cell biology
+  stem_cell_markers:
+    pluripotency: ["POU5F1", "SOX2", "NANOG", "KLF4", "MYC"]
+    neural: ["NES", "SOX1", "PAX6", "NCAM1"]
+    mesenchymal: ["CD44", "CD90", "CD105", "RUNX2"]
+    
+  # Drug categories of interest
+  drug_categories:
+    - "small_molecule"
+    - "growth_factor"
+    - "cytokine"
+    - "kinase_inhibitor"
+    - "epigenetic_modifier"
+
+# Data preprocessing options
+preprocessing:
+  # Gene filtering
+  min_genes_per_cell: 200  # Minimum genes expressed per cell
+  min_cells_per_gene: 3  # Minimum cells expressing each gene
+  
+  # Normalization
+  normalize_total: 10000  # Target sum for normalization
+  log_transform: true  # Apply log1p transformation
+  
+  # Highly variable genes
+  n_top_genes: 2000  # Number of highly variable genes to keep
+  
+  # Quality control
+  mt_gene_prefix: "MT-"  # Mitochondrial gene prefix
+  max_mt_percent: 20  # Maximum mitochondrial gene percentage
+
+# Evaluation metrics
+evaluation:
+  metrics:
+    - "r2_score"  # R-squared for regression performance
+    - "pearson_correlation"  # Pearson correlation
+    - "mean_squared_error"  # MSE loss
+    - "disentanglement_score"  # How well the model separates factors
+    
+  # Cross-validation
+  cv_folds: 5  # Number of cross-validation folds
+  
+  # Out-of-distribution evaluation
+  ood_evaluation:
+    enabled: true
+    test_unseen_drugs: true  # Test on completely unseen drugs
+    test_unseen_cell_types: true  # Test on unseen cell types
+
