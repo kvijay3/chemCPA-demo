@@ -118,8 +118,8 @@ def evaluate_logfold_r2(autoencoder: ComPert, ds_treated: SubDataset, ds_ctrl: S
         else:
             emb_drugs = repeat_n(ds_treated.drugs[idx_treated], n_idx_ctrl)
 
-        # Could try moving the whole genes tensor to GPU once for further speedups (but more memory problems)
-        genes_ctrl = ds_ctrl.genes[idx_ctrl_all].to(device="cuda")
+        # Could try moving the whole genes tensor to device once for further speedups (but more memory problems)
+        genes_ctrl = ds_ctrl.genes[idx_ctrl_all].to(device=autoencoder.device)
 
         genes_pred, _ = compute_prediction(
             autoencoder,
@@ -127,8 +127,8 @@ def evaluate_logfold_r2(autoencoder: ComPert, ds_treated: SubDataset, ds_ctrl: S
             emb_drugs,
             emb_covs,
         )
-        # Could try moving the whole genes tensor to GPU once for further speedups (but more memory problems)
-        genes_true = ds_treated.genes[idx_treated_all, :].to(device="cuda")
+        # Could try moving the whole genes tensor to device once for further speedups (but more memory problems)
+        genes_true = ds_treated.genes[idx_treated_all, :].to(device=autoencoder.device)
 
         y_ctrl = genes_ctrl.mean(0)[idx_de]
         y_pred = genes_pred.mean(0)[idx_de]
@@ -197,7 +197,7 @@ def evaluate_disentanglement(autoencoder: ComPert, dataloader: DataLoader):
     def compute_score(labels):
         unique_labels = set(labels)
         label_to_idx = {labels: idx for idx, labels in enumerate(unique_labels)}
-        labels_tensor = torch.tensor([label_to_idx[label] for label in labels], dtype=torch.long, device="cuda")
+        labels_tensor = torch.tensor([label_to_idx[label] for label in labels], dtype=torch.long, device=autoencoder.device)
         assert normalized_basal.size(0) == len(labels_tensor)
         dataset = torch.utils.data.TensorDataset(normalized_basal, labels_tensor)
         data_loader = torch.utils.data.DataLoader(dataset, batch_size=256, shuffle=True)
@@ -311,9 +311,9 @@ def evaluate_r2(model: ComPert, dataset: SubDataset, genes_control: torch.Tensor
             emb_covs,
         )
 
-        # copies just the needed genes to GPU
-        # Could try moving the whole genes tensor to GPU once for further speedups (but more memory problems)
-        y_true = dataset.genes[idx_all, :].to(device="cuda")
+        # copies just the needed genes to device
+        # Could try moving the whole genes tensor to device once for further speedups (but more memory problems)
+        y_true = dataset.genes[idx_all, :].to(device=model.device)
 
         # true means and variances
         y_true_mean = y_true.mean(dim=0)
@@ -385,7 +385,7 @@ def evaluate_r2_sc(autoencoder: ComPert, dataset: SubDataset):
         bool_category = pert_categories_index.get_loc(cell_drug_dose_comb)
         idx_all = bool2idx(bool_category)
         idx = idx_all[0]
-        y_true = dataset.genes[idx_all, :].to(device="cuda")
+        y_true = dataset.genes[idx_all, :].to(device=model.device)
         n_obs = y_true.size(0)
 
         emb_covs = [repeat_n(cov[idx], n_obs) for cov in dataset.covariates]
