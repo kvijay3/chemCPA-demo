@@ -211,18 +211,18 @@ def train_chemcpa(
         else:
             print("⚠️  No checkpoints directory found")
         
-            return {
-                "status": "success",
-                "output": "\n".join(output_lines),
-                "model_path": str(results_dir / "outputs" / "checkpoints")
-            }
-        else:
-            print(f"❌ Training failed with exit code {return_code}")
-            return {
-                "status": "error",
-                "exit_code": return_code,
-                "output": "\n".join(output_lines)
-            }
+        return {
+            "status": "success",
+            "output": "\n".join(output_lines),
+            "model_path": str(results_dir / "outputs" / "checkpoints")
+        }
+    else:
+        print(f"❌ Training failed with exit code {return_code}")
+        return {
+            "status": "error",
+            "exit_code": return_code,
+            "output": "\n".join(output_lines)
+        }
         
     except Exception as e:
         print(f"❌ Training failed with exception: {e}")
