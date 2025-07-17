@@ -2,10 +2,13 @@ import modal
 import shutil
 from pathlib import Path
 
+# Create image with git installed
+image = modal.Image.debian_slim().pip_install("requests").run_commands("apt-get update && apt-get install -y git")
+
 app = modal.App("chemcpa-upload")
 volume = modal.Volume.from_name("chemcpa-data", create_if_missing=True)
 
-@app.function(volumes={"/data": volume}, timeout=1800)
+@app.function(image=image, volumes={"/data": volume}, timeout=1800)
 def upload_updated_code():
     """Upload the updated ChemCPA code to Modal volume"""
     import os

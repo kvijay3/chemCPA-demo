@@ -86,23 +86,41 @@ def train_chemcpa(
     project_folder.mkdir(exist_ok=True)
     shutil.copytree(data_dir / "datasets", project_folder / "datasets")
     
-    # Copy source code from volume
-    if (data_dir / "chemCPA").exists():
-        shutil.copytree(data_dir / "chemCPA", work_dir / "chemCPA")
-    else:
-        print("⚠️  ChemCPA source code not found in volume")
-        return {"error": "Source code not found"}
+    # Copy source code from current repo (mounted via Modal)
+    # Modal automatically syncs the current directory
+    import subprocess
     
-    # Copy training script
-    if (data_dir / "train_chemcpa_simple.py").exists():
-        shutil.copy2(data_dir / "train_chemcpa_simple.py", work_dir / "train_chemcpa_simple.py")
-    else:
-        print("⚠️  Training script not found in volume")
-        return {"error": "Training script not found"}
+    print("📥 Cloning latest code with fixes...")
+    result = subprocess.run([
+        "git", "clone", "--branch", "codegen-bot/fix-dataset-configuration-degs-key",
+        "https://github.com/kvijay3/chemCPA-demo.git", "/tmp/chemcpa-source"
+    ], capture_output=True, text=True)
     
-    # Copy config files
-    if (data_dir / "config").exists():
-        shutil.copytree(data_dir / "config", work_dir / "config")
+    if result.returncode == 0:
+        source_dir = Path("/tmp/chemcpa-source")
+        
+        # Copy chemCPA module
+        if (source_dir / "chemCPA").exists():
+            shutil.copytree(source_dir / "chemCPA", work_dir / "chemCPA")
+            print("✅ Copied chemCPA module with fixes")
+        
+        # Copy training script
+        if (source_dir / "train_chemcpa_simple.py").exists():
+            shutil.copy2(source_dir / "train_chemcpa_simple.py", work_dir / "train_chemcpa_simple.py")
+            print("✅ Copied training script with fixes")
+        
+        # Copy config files
+        if (source_dir / "config").exists():
+            shutil.copytree(source_dir / "config", work_dir / "config")
+            print("✅ Copied config files")
+    else:
+        print(f"❌ Failed to clone repo: {result.stderr}")
+        # Fallback to volume if available
+        if (data_dir / "chemCPA").exists():
+            shutil.copytree(data_dir / "chemCPA", work_dir / "chemCPA")
+            print("⚠️  Using code from volume (may be outdated)")
+        else:
+            return {"error": "Could not get source code"}
     
     # Copy embeddings directory to project_folder
     if (data_dir / "embeddings").exists():
