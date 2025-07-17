@@ -49,8 +49,8 @@ volume = modal.Volume.from_name("chemcpa-data", create_if_missing=True)
 def train_chemcpa(
     dataset: str = "lincs",
     epochs: int = 50,
-    batch_size: int = 128,
-    learning_rate: float = 1e-3
+    batch_size: int = 128,  # Modal CLI will accept both --batch-size and --batch_size
+    learning_rate: float = 1e-3  # Modal CLI will accept both --learning-rate and --learning_rate
 ):
     """Train ChemCPA model on Modal with A100 GPU"""
     import subprocess
@@ -211,18 +211,19 @@ def train_chemcpa(
         else:
             print("⚠️  No checkpoints directory found")
         
-        return {
-            "status": "success",
-            "output": "\n".join(output_lines),
-            "model_path": str(results_dir / "outputs" / "checkpoints")
-        }
-    else:
-        print(f"❌ Training failed with exit code {return_code}")
-        return {
-            "status": "error",
-            "exit_code": return_code,
-            "output": "\n".join(output_lines)
-        }
+        if return_code == 0:
+            return {
+                "status": "success",
+                "output": "\n".join(output_lines),
+                "model_path": str(results_dir / "outputs" / "checkpoints")
+            }
+        else:
+            print(f"❌ Training failed with exit code {return_code}")
+            return {
+                "status": "error",
+                "exit_code": return_code,
+                "output": "\n".join(output_lines)
+            }
         
     except Exception as e:
         print(f"❌ Training failed with exception: {e}")
