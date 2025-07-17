@@ -43,7 +43,7 @@ volume = modal.Volume.from_name("chemcpa-data", create_if_missing=True)
     image=image,
     gpu="A100-40GB",
     volumes={"/data": volume},
-    timeout=3600 * 4,  # 4 hours timeout
+    timeout=3600 * 20,  # 20 hours timeout
     memory=32768,  # 32GB RAM
 )
 def train_chemcpa(
@@ -143,7 +143,7 @@ def train_chemcpa(
     output_dir.mkdir(exist_ok=True)
     
     cmd = [
-        sys.executable, "train_chemcpa_simple.py",
+        sys.executable, "-u", "train_chemcpa_simple.py",  # -u for unbuffered output
         "--dataset", dataset,
         "--epochs", str(epochs),
         "--batch_size", str(batch_size),
@@ -152,9 +152,32 @@ def train_chemcpa(
     ]
     
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        print("✅ Training completed successfully!")
-        print("STDOUT:", result.stdout)
+        # Use Popen for real-time output streaming
+        print("🚀 Starting training with real-time output...")
+        process = subprocess.Popen(
+            cmd, 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.STDOUT,  # Merge stderr into stdout
+            text=True,
+            bufsize=1,  # Line buffered
+            universal_newlines=True
+        )
+        
+        # Stream output in real-time
+        output_lines = []
+        while True:
+            line = process.stdout.readline()
+            if line == '' and process.poll() is not None:
+                break
+            if line:
+                print(line.rstrip())  # Print to Modal logs immediately
+                output_lines.append(line.rstrip())
+        
+        # Wait for process to complete
+        return_code = process.wait()
+        
+        if return_code == 0:
+            print("✅ Training completed successfully!")
         
         # Save results back to volume
         results_dir = data_dir / "results"
@@ -188,21 +211,24 @@ def train_chemcpa(
         else:
             print("⚠️  No checkpoints directory found")
         
-        return {
-            "status": "success",
-            "stdout": result.stdout,
-            "stderr": result.stderr
-        }
+            return {
+                "status": "success",
+                "output": "\n".join(output_lines),
+                "model_path": str(results_dir / "outputs" / "checkpoints")
+            }
+        else:
+            print(f"❌ Training failed with exit code {return_code}")
+            return {
+                "status": "error",
+                "exit_code": return_code,
+                "output": "\n".join(output_lines)
+            }
         
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Training failed with exit code {e.returncode}")
-        print("STDOUT:", e.stdout)
-        print("STDERR:", e.stderr)
+    except Exception as e:
+        print(f"❌ Training failed with exception: {e}")
         return {
             "status": "error",
-            "exit_code": e.returncode,
-            "stdout": e.stdout,
-            "stderr": e.stderr
+            "exception": str(e)
         }
 
 @app.function(
