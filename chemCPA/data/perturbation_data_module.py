@@ -14,12 +14,13 @@ def custom_collate(batch):
     return concat_batch
 
 class PerturbationDataModule(L.LightningDataModule):
-    def __init__(self, datasplits, train_bs=32, val_bs=32, test_bs=32):
+    def __init__(self, datasplits, train_bs=32, val_bs=32, test_bs=32, num_workers=16):
         super().__init__()
         self.datasplits = datasplits
         self.train_bs = train_bs
         self.val_bs = val_bs
         self.test_bs = test_bs
+        self.num_workers = num_workers  # Optimize for A100 performance
 
     def setup(self, stage: str):
         # Assign datasets for use in dataloaders
@@ -43,17 +44,55 @@ class PerturbationDataModule(L.LightningDataModule):
             self.ood_treated_dataset = self.datasplits["ood"]
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.train_bs, shuffle=True, collate_fn=custom_collate)
+        return DataLoader(
+            self.train_dataset, 
+            batch_size=self.train_bs, 
+            shuffle=True, 
+            collate_fn=custom_collate,
+            num_workers=self.num_workers,
+            pin_memory=True,  # Faster GPU transfer
+            persistent_workers=True  # Keep workers alive between epochs
+        )
 
     def val_dataloader(self):
         return {
-            "test": DataLoader(self.test_dataset, batch_size=self.val_bs),
-            "test_control": DataLoader(self.test_control_dataset, batch_size=self.val_bs),
-            "test_treated": DataLoader(self.test_treated_dataset, batch_size=self.val_bs),
+            "test": DataLoader(
+                self.test_dataset, 
+                batch_size=self.val_bs,
+                num_workers=self.num_workers,
+                pin_memory=True,
+                persistent_workers=True
+            ),
+            "test_control": DataLoader(
+                self.test_control_dataset, 
+                batch_size=self.val_bs,
+                num_workers=self.num_workers,
+                pin_memory=True,
+                persistent_workers=True
+            ),
+            "test_treated": DataLoader(
+                self.test_treated_dataset, 
+                batch_size=self.val_bs,
+                num_workers=self.num_workers,
+                pin_memory=True,
+                persistent_workers=True
+            ),
         }
 
     def test_dataloader(self):
-        return DataLoader(self.test_dataset, batch_size=self.test_bs)
+        return DataLoader(
+            self.test_dataset, 
+            batch_size=self.test_bs,
+            num_workers=self.num_workers,
+            pin_memory=True,
+            persistent_workers=True
+        )
 
     def predict_dataloader(self):
-        return DataLoader(self.ood_dataset, batch_size=self.test_bs)
+        return DataLoader(
+            self.ood_dataset, 
+            batch_size=self.test_bs,
+            num_workers=self.num_workers,
+            pin_memory=True,
+            persistent_workers=True
+        )

@@ -162,10 +162,11 @@ class SimplifiedChemCPATrainer:
             dataset_config = {k: v for k, v in self.config['dataset'].items() if k != 'description'}
             datasets, dataset = load_dataset_splits(**dataset_config, return_dataset=True)
             
-            # Create data module
+            # Create data module with A100 optimizations
             dm = PerturbationDataModule(
                 datasplits=datasets, 
-                train_bs=self.config['model']['hparams']['batch_size']
+                train_bs=self.config['model']['hparams']['batch_size'],
+                num_workers=16  # Optimize DataLoader for A100 performance
             )
             
             # Dataset configuration for model
@@ -280,24 +281,34 @@ class SimplifiedChemCPATrainer:
         # Determine the appropriate accelerator
         if torch.cuda.is_available():
             accelerator = 'cuda'
+            # Enable Tensor Cores for A100 performance optimization
+            torch.set_float32_matmul_precision('medium')
+            print("🚀 Enabled Tensor Cores with medium precision for A100 optimization")
         elif torch.backends.mps.is_available():
             accelerator = 'mps'  # Apple Silicon GPU
         else:
             accelerator = 'cpu'
             
-        # Create trainer
-        trainer = L.Trainer(
-            accelerator=accelerator,
-            devices=1,
-            max_epochs=self.args.epochs,
-            callbacks=callbacks,
-            logger=logger,
-            check_val_every_n_epoch=self.config['training']['checkpoint_freq'],
+        # Create trainer with A100 optimizations
+        trainer_kwargs = {
+            'accelerator': accelerator,
+            'devices': 1,
+            'max_epochs': self.args.epochs,
+            'callbacks': callbacks,
+            'logger': logger,
+            'check_val_every_n_epoch': self.config['training']['checkpoint_freq'],
             # Note: gradient_clip_val removed because ChemCPA uses manual optimization
-            deterministic=True,  # For reproducibility
-            enable_progress_bar=True,  # Show training progress
-            log_every_n_steps=50,      # Log metrics every 50 steps
-        )
+            'deterministic': True,  # For reproducibility
+            'enable_progress_bar': True,  # Show training progress
+            'log_every_n_steps': 50,      # Log metrics every 50 steps
+        }
+        
+        # Add mixed precision for A100 Tensor Cores optimization
+        if accelerator == 'cuda':
+            trainer_kwargs['precision'] = '16-mixed'  # Enable mixed precision for A100
+            print("🚀 Enabled mixed precision training for A100 Tensor Cores")
+        
+        trainer = L.Trainer(**trainer_kwargs)
         
         print(f"Starting training for {self.args.epochs} epochs...")
         print(f"Using device: {trainer.accelerator}")
