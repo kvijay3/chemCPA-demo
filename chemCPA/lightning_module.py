@@ -310,6 +310,10 @@ class ChemCPA(L.LightningModule):
         metric_names = ["R2_mean", "R2_mean_de", "R2_var", "R2_var_de"]
         self.log_dict(dict(zip(metric_names, result)), on_step=False, on_epoch=True, prog_bar=True)
         
+        # Log val_loss for ModelCheckpoint monitoring (use negative R2_mean as loss)
+        val_loss = -result[0]  # Negative R2_mean (higher R2 = lower loss)
+        self.log("val_loss", val_loss, on_step=False, on_epoch=True, prog_bar=True)
+        
         # Print validation results
         print(f"Validation R² scores: Mean={result[0]:.4f}, Mean_DE={result[1]:.4f}, Var={result[2]:.4f}, Var_DE={result[3]:.4f}")
         self.train()
