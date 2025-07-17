@@ -6,8 +6,19 @@ volume = modal.Volume.from_name("chemcpa-data")
 @app.function(volumes={"/data": volume})
 def fix_lightning_module():
     """Quick fix for the val_loss issue"""
+    from pathlib import Path
     
-    lightning_module_path = "/data/chemCPA/lightning_module.py"
+    data_dir = Path("/data")
+    lightning_module_path = data_dir / "chemCPA" / "lightning_module.py"
+    
+    # Check if the file exists
+    if not lightning_module_path.exists():
+        print(f"❌ File not found: {lightning_module_path}")
+        print("📁 Available files in /data:")
+        for item in data_dir.rglob("*"):
+            if item.is_file():
+                print(f"   {item}")
+        return {"error": "lightning_module.py not found"}
     
     # Read the current file
     with open(lightning_module_path, 'r') as f:
@@ -43,4 +54,3 @@ if __name__ == "__main__":
     with app.run():
         result = fix_lightning_module.remote()
         print("Fix result:", result)
-

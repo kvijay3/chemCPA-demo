@@ -13,6 +13,11 @@ def upload_updated_code():
     
     data_dir = Path("/data")
     
+    print("📁 Current contents of /data:")
+    for item in data_dir.rglob("*"):
+        if item.is_file():
+            print(f"   {item}")
+    
     # Remove old code
     if (data_dir / "chemCPA").exists():
         shutil.rmtree(data_dir / "chemCPA")
@@ -60,4 +65,3 @@ if __name__ == "__main__":
     with app.run():
         result = upload_updated_code.remote()
         print("Upload result:", result)
-
